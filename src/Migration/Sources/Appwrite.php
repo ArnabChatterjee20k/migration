@@ -70,6 +70,7 @@ class Appwrite extends Source
         protected string $source = self::SOURCE_API,
         protected ?UtopiaDatabase $dbForProject = null
     ) {
+        throw new \Exception('sdf');
         $this->client = (new Client())
             ->setEndpoint($endpoint)
             ->setProject($project)
