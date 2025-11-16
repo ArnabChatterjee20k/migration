@@ -123,6 +123,16 @@ class CSV extends Source
         }
     }
 
+    protected function exportGroupDocumentsDB(int $batchSize, array $resources): void
+    {
+        throw new \Exception('DocumentsDB export not supported for CSV source');
+    }
+
+    protected function exportGroupVectorDB(int $batchSize, array $resources): void
+    {
+        throw new \Exception('VectorDB export not supported for CSV source');
+    }
+
     /**
      * @throws \Exception
      */

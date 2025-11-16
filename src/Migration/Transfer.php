@@ -14,6 +14,10 @@ class Transfer
 
     public const GROUP_DATABASES = 'databases';
 
+    public const GROUP_DOCUMENTSDB = 'documentsdb';
+
+    public const GROUP_VECTORDB = 'vectordb';
+
     public const GROUP_SETTINGS = 'settings';
 
     public const GROUP_AUTH_RESOURCES = [
@@ -36,15 +40,25 @@ class Transfer
 
     public const GROUP_DATABASES_RESOURCES = [
         Resource::TYPE_DATABASE,
-        Resource::TYPE_DATABASE_DOCUMENTSDB,
-        Resource::TYPE_DATABASE_VECTORDB,
         Resource::TYPE_TABLE,
         Resource::TYPE_INDEX,
         Resource::TYPE_COLUMN,
         Resource::TYPE_ROW,
-        Resource::TYPE_DOCUMENT,
+    ];
+
+    public const GROUP_DOCUMENTSDB_RESOURCES = [
+        Resource::TYPE_DATABASE_DOCUMENTSDB,
         Resource::TYPE_COLLECTION,
-        Resource::TYPE_ATTRIBUTE
+        Resource::TYPE_DOCUMENT,
+        Resource::TYPE_INDEX,
+    ];
+
+    public const GROUP_VECTORDB_RESOURCES = [
+        Resource::TYPE_DATABASE_VECTORDB,
+        Resource::TYPE_COLLECTION,
+        Resource::TYPE_DOCUMENT,
+        Resource::TYPE_ATTRIBUTE,
+        Resource::TYPE_INDEX,
     ];
 
     public const GROUP_SETTINGS_RESOURCES = [];
@@ -333,6 +347,8 @@ class Transfer
                 self::GROUP_GENERAL => array_merge($resources, []),
                 self::GROUP_AUTH => array_merge($resources, self::GROUP_AUTH_RESOURCES),
                 self::GROUP_DATABASES => array_merge($resources, self::GROUP_DATABASES_RESOURCES),
+                self::GROUP_DOCUMENTSDB => array_merge($resources, self::GROUP_DOCUMENTSDB_RESOURCES),
+                self::GROUP_VECTORDB => array_merge($resources, self::GROUP_VECTORDB_RESOURCES),
                 self::GROUP_SETTINGS => array_merge($resources, self::GROUP_SETTINGS_RESOURCES),
                 default => throw new \Exception('No service group found'),
             };

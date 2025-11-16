@@ -637,10 +637,12 @@ class Appwrite extends Source
     protected function exportGroupDatabases(int $batchSize, array $resources): void
     {
         $handleExportEntityScopedResources = function (string $resourceKey, callable $callback) use ($resources) {
-            foreach (Resource::ENTITY_TYPE_RESOURCE_MAP as $entityKey => $entityResource) {
+            // Only handle TYPE_TABLE for traditional databases
+            if (isset(Resource::ENTITY_TYPE_RESOURCE_MAP[Resource::TYPE_TABLE])) {
+                $entityResource = Resource::ENTITY_TYPE_RESOURCE_MAP[Resource::TYPE_TABLE];
                 try {
                     if (\in_array($entityResource[$resourceKey], $resources)) {
-                        $callback($entityKey, $entityResource);
+                        $callback(Resource::TYPE_TABLE, $entityResource);
                     }
                 } catch (\Throwable $e) {
                     $this->addError(
@@ -660,7 +662,7 @@ class Appwrite extends Source
         };
 
         try {
-            if (Resource::isSupported(array_keys(Resource::DATABASE_TYPE_RESOURCE_MAP), $resources)) {
+            if (\in_array(Resource::TYPE_DATABASE, $resources)) {
                 $this->exportDatabases($batchSize, $resources);
             }
         } catch (\Throwable $e) {
@@ -677,10 +679,12 @@ class Appwrite extends Source
             return;
         }
 
-        foreach (Resource::DATABASE_TYPE_RESOURCE_MAP as $databaseKey => $databaseResource) {
+        // Only export entities for traditional databases (TYPE_DATABASE)
+        if (isset(Resource::DATABASE_TYPE_RESOURCE_MAP[Resource::TYPE_DATABASE])) {
+            $databaseResource = Resource::DATABASE_TYPE_RESOURCE_MAP[Resource::TYPE_DATABASE];
             try {
                 if (\in_array($databaseResource['entity'], $resources)) {
-                    $this->exportEntities($databaseKey, $batchSize);
+                    $this->exportEntities(Resource::TYPE_DATABASE, $batchSize);
                 }
             } catch (\Throwable $e) {
                 $this->addError(
@@ -708,6 +712,172 @@ class Appwrite extends Source
         }
 
         // record
+        if (!$handleExportEntityScopedResources('record', fn ($entityKey, $entityResource) => $this->exportRecords($entityKey, $entityResource['field'], $batchSize))) {
+            return;
+        }
+    }
+
+    protected function exportGroupDocumentsDB(int $batchSize, array $resources): void
+    {
+        $handleExportEntityScopedResources = function (string $resourceKey, callable $callback) use ($resources) {
+            // Only handle TYPE_COLLECTION for documentsdb
+            if (isset(Resource::ENTITY_TYPE_RESOURCE_MAP[Resource::TYPE_COLLECTION])) {
+                $entityResource = Resource::ENTITY_TYPE_RESOURCE_MAP[Resource::TYPE_COLLECTION];
+                try {
+                    if (\in_array($entityResource[$resourceKey], $resources)) {
+                        $callback(Resource::TYPE_COLLECTION, $entityResource);
+                    }
+                } catch (\Throwable $e) {
+                    $this->addError(
+                        new Exception(
+                            $resourceKey,
+                            Transfer::GROUP_DOCUMENTSDB,
+                            message: $e->getMessage(),
+                            code: $e->getCode(),
+                            previous: $e
+                        )
+                    );
+
+                    return false;
+                }
+            }
+            return true;
+        };
+
+        try {
+            if (\in_array(Resource::TYPE_DATABASE_DOCUMENTSDB, $resources)) {
+                $this->exportDatabases($batchSize, $resources);
+            }
+        } catch (\Throwable $e) {
+            $this->addError(
+                new Exception(
+                    Resource::TYPE_DATABASE_DOCUMENTSDB,
+                    Transfer::GROUP_DOCUMENTSDB,
+                    message: $e->getMessage(),
+                    code: $e->getCode(),
+                    previous: $e
+                )
+            );
+
+            return;
+        }
+
+        // Only export entities for documentsdb
+        if (isset(Resource::DATABASE_TYPE_RESOURCE_MAP[Resource::TYPE_DATABASE_DOCUMENTSDB])) {
+            $databaseResource = Resource::DATABASE_TYPE_RESOURCE_MAP[Resource::TYPE_DATABASE_DOCUMENTSDB];
+            try {
+                if (\in_array($databaseResource['entity'], $resources)) {
+                    $this->exportEntities(Resource::TYPE_DATABASE_DOCUMENTSDB, $batchSize);
+                }
+            } catch (\Throwable $e) {
+                $this->addError(
+                    new Exception(
+                        $databaseResource['entity'],
+                        Transfer::GROUP_DOCUMENTSDB,
+                        message: $e->getMessage(),
+                        code: $e->getCode(),
+                        previous: $e
+                    )
+                );
+
+                return;
+            }
+        }
+
+        // field (attributes)
+        if (!$handleExportEntityScopedResources('field', fn ($entityKey) => $this->exportFields($entityKey, $batchSize))) {
+            return;
+        }
+
+        // index
+        if (!$handleExportEntityScopedResources('index', fn ($entityKey) => $this->exportIndexes($entityKey, $batchSize))) {
+            return;
+        }
+
+        // record (documents)
+        if (!$handleExportEntityScopedResources('record', fn ($entityKey, $entityResource) => $this->exportRecords($entityKey, $entityResource['field'], $batchSize))) {
+            return;
+        }
+    }
+
+    protected function exportGroupVectorDB(int $batchSize, array $resources): void
+    {
+        $handleExportEntityScopedResources = function (string $resourceKey, callable $callback) use ($resources) {
+            // Handle TYPE_COLLECTION for vectordb (as per Resource mapping)
+            if (isset(Resource::ENTITY_TYPE_RESOURCE_MAP[Resource::TYPE_COLLECTION])) {
+                $entityResource = Resource::ENTITY_TYPE_RESOURCE_MAP[Resource::TYPE_COLLECTION];
+                try {
+                    if (\in_array($entityResource[$resourceKey], $resources)) {
+                        $callback(Resource::TYPE_COLLECTION, $entityResource);
+                    }
+                } catch (\Throwable $e) {
+                    $this->addError(
+                        new Exception(
+                            $resourceKey,
+                            Transfer::GROUP_VECTORDB,
+                            message: $e->getMessage(),
+                            code: $e->getCode(),
+                            previous: $e
+                        )
+                    );
+
+                    return false;
+                }
+            }
+            return true;
+        };
+
+        try {
+            if (\in_array(Resource::TYPE_DATABASE_VECTORDB, $resources)) {
+                $this->exportDatabases($batchSize, $resources);
+            }
+        } catch (\Throwable $e) {
+            $this->addError(
+                new Exception(
+                    Resource::TYPE_DATABASE_VECTORDB,
+                    Transfer::GROUP_VECTORDB,
+                    message: $e->getMessage(),
+                    code: $e->getCode(),
+                    previous: $e
+                )
+            );
+
+            return;
+        }
+
+        // Export entities for vectordb - using TYPE_COLLECTION as per Resource mapping
+        if (isset(Resource::DATABASE_TYPE_RESOURCE_MAP[Resource::TYPE_DATABASE_VECTORDB])) {
+            $databaseResource = Resource::DATABASE_TYPE_RESOURCE_MAP[Resource::TYPE_DATABASE_VECTORDB];
+            try {
+                if (\in_array($databaseResource['entity'], $resources)) {
+                    $this->exportEntities(Resource::TYPE_DATABASE_VECTORDB, $batchSize);
+                }
+            } catch (\Throwable $e) {
+                $this->addError(
+                    new Exception(
+                        $databaseResource['entity'],
+                        Transfer::GROUP_VECTORDB,
+                        message: $e->getMessage(),
+                        code: $e->getCode(),
+                        previous: $e
+                    )
+                );
+
+                return;
+            }
+        }
+
+        // field (attributes)
+        if (!$handleExportEntityScopedResources('field', fn ($entityKey) => $this->exportFields($entityKey, $batchSize))) {
+            return;
+        }
+
+        // index
+        if (!$handleExportEntityScopedResources('index', fn ($entityKey) => $this->exportIndexes($entityKey, $batchSize))) {
+            return;
+        }
+
+        // record (documents)
         if (!$handleExportEntityScopedResources('record', fn ($entityKey, $entityResource) => $this->exportRecords($entityKey, $entityResource['field'], $batchSize))) {
             return;
         }
@@ -869,6 +1039,7 @@ class Appwrite extends Source
 
         /** @var array<Table|Collection> $table */
         foreach ($entities as $table) {
+            /** @var Table|Collection $table */
             $lastColumn = null;
 
             while (true) {
@@ -889,7 +1060,7 @@ class Appwrite extends Source
                         continue;
                     }
 
-                    /** @var Table $table */
+                    /** @var Table|Collection $table */
                     $col = match($table->getDatabase()->getType()) {
                         Resource::TYPE_DATABASE_VECTORDB => self::getAttribute($table, $column),
                         default => self::getColumn($table, $column),
@@ -923,7 +1094,7 @@ class Appwrite extends Source
         $entities = $this->cache->get($entityType);
         // Transfer Indexes
         foreach ($entities as $table) {
-            /** @var Table $table */
+            /** @var Table|Collection $table */
             $lastIndex = null;
 
             while (true) {

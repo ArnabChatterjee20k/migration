@@ -87,6 +87,8 @@ abstract class Source extends Target
             $mapping = [
                 Transfer::GROUP_AUTH => Transfer::GROUP_AUTH_RESOURCES,
                 Transfer::GROUP_DATABASES => Transfer::GROUP_DATABASES_RESOURCES,
+                Transfer::GROUP_DOCUMENTSDB => Transfer::GROUP_DOCUMENTSDB_RESOURCES,
+                Transfer::GROUP_VECTORDB => Transfer::GROUP_VECTORDB_RESOURCES,
                 Transfer::GROUP_STORAGE => Transfer::GROUP_STORAGE_RESOURCES,
                 Transfer::GROUP_FUNCTIONS => Transfer::GROUP_FUNCTIONS_RESOURCES,
             ];
@@ -110,6 +112,12 @@ abstract class Source extends Target
                     break;
                 case Transfer::GROUP_DATABASES:
                     $this->exportGroupDatabases($this->getDatabasesBatchSize(), $resources);
+                    break;
+                case Transfer::GROUP_DOCUMENTSDB:
+                    $this->exportGroupDocumentsDB($this->getDatabasesBatchSize(), $resources);
+                    break;
+                case Transfer::GROUP_VECTORDB:
+                    $this->exportGroupVectorDB($this->getDatabasesBatchSize(), $resources);
                     break;
                 case Transfer::GROUP_STORAGE:
                     $this->exportGroupStorage($this->getStorageBatchSize(), $resources);
@@ -136,6 +144,22 @@ abstract class Source extends Target
      * @param array<string> $resources Resources to export
      */
     abstract protected function exportGroupDatabases(int $batchSize, array $resources): void;
+
+    /**
+     * Export DocumentsDB Group
+     *
+     * @param int $batchSize
+     * @param array<string> $resources Resources to export
+     */
+    abstract protected function exportGroupDocumentsDB(int $batchSize, array $resources): void;
+
+    /**
+     * Export VectorDB Group
+     *
+     * @param int $batchSize
+     * @param array<string> $resources Resources to export
+     */
+    abstract protected function exportGroupVectorDB(int $batchSize, array $resources): void;
 
     /**
      * Export Storage Group

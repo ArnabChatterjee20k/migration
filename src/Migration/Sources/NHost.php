@@ -364,6 +364,16 @@ class NHost extends Source
         }
     }
 
+    protected function exportGroupDocumentsDB(int $batchSize, array $resources): void
+    {
+        throw new \Exception('DocumentsDB export not supported for NHost source');
+    }
+
+    protected function exportGroupVectorDB(int $batchSize, array $resources): void
+    {
+        throw new \Exception('VectorDB export not supported for NHost source');
+    }
+
     private function exportDatabases(int $batchSize): void
     {
         // We'll only transfer the public database for now, since it's the only one that exists by default.

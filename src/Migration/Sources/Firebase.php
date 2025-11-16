@@ -317,6 +317,16 @@ class Firebase extends Source
         }
     }
 
+    protected function exportGroupDocumentsDB(int $batchSize, array $resources): void
+    {
+        throw new \Exception('DocumentsDB export not supported for Firebase source');
+    }
+
+    protected function exportGroupVectorDB(int $batchSize, array $resources): void
+    {
+        throw new \Exception('VectorDB export not supported for Firebase source');
+    }
+
     private function exportDB(int $batchSize, bool $pushRows, Database $database): void
     {
         $baseURL = "https://firestore.googleapis.com/v1/projects/{$this->projectID}/databases/(default)/documents";
